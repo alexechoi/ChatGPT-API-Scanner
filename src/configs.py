@@ -56,6 +56,10 @@ KEYWORDS = [
     "密钥",
     "测试",
     "语言模型",
+    "anthropic",
+    "anthropic api key",
+    "sk-anthropic",
+    "sk-ant",
 ]
 
 LANGUAGES = [
@@ -91,4 +95,6 @@ REGEX_LIST = [
     (re.compile(r"sk-proj-[A-Za-z0-9]{20}T3BlbkFJ[A-Za-z0-9]{20}"), True, False),
     # Old key format (deprecated by OpenAI)
     (re.compile(r"sk-[a-zA-Z0-9]{48}"), True, False),
+    # Anthropic API Key (updated pattern based on user example)
+    (re.compile(r"sk-ant-[A-Za-z0-9-_]{80}"), True, False),
 ]
