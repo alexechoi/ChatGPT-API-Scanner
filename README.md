@@ -1,6 +1,6 @@
 # ChatGPT-API-Scanner
 
-This tool scans GitHub for available OpenAI API Keys.
+This tool scans GitHub for available OpenAI and Anthropic API Keys.
 
 ![Result Demo 1](pics/demo.png)
 
@@ -11,10 +11,9 @@ This tool scans GitHub for available OpenAI API Keys.
 > As of `March 11, 2024`, secret scanning and push protection will be enabled by default for all new user-owned public repositories that you create.
 > Check this announcement [here](https://docs.github.com/en/code-security/getting-started/quickstart-for-securing-your-repository).
 
-> [!WARNING]
-> **⚠️ DISCLAIMER**
+> [!WARNING] > **⚠️ DISCLAIMER**
 >
-> THIS PROJECT IS ONLY FOR ***SECURITY RESEARCH*** AND REMINDS OTHERS TO PROTECT THEIR PROPERTY, DO NOT USE IT ILLEGALLY!!
+> THIS PROJECT IS ONLY FOR **_SECURITY RESEARCH_** AND REMINDS OTHERS TO PROTECT THEIR PROPERTY, DO NOT USE IT ILLEGALLY!!
 >
 > The project authors are not responsible for any consequences resulting from misuse.
 
@@ -41,50 +40,62 @@ Ensure you have the following installed on your system:
 
 1. Clone the repository:
 
-    ```bash
-    git clone https://github.com/Junyi-99/ChatGPT-API-Leakage
+   ```bash
+   git clone https://github.com/Junyi-99/ChatGPT-API-Leakage
 
-    cd ChatGPT-API-Leakage
-    ```
+   cd ChatGPT-API-Leakage
+   ```
 
 2. Install required pypi packages
 
-    ```bash
-    pip install selenium tqdm openai rich
-    ```
+   ```bash
+   pip install selenium tqdm openai anthropic rich
+   ```
 
 ## Usage
 
 1. Run the main script:
 
-    ```bash
-    python3 src/main.py
-    ```
+   ```bash
+   python3 src/main.py
+   ```
 
 2. You will be prompted to log in to your GitHub account in the browser. Please do so.
 
-That's it! The script will now scan GitHub for available OpenAI API Keys.
+3. Specify the provider type (`openai` or `anthropic`) using the `--provider-type` argument:
+
+   ```bash
+   python3 src/main.py --provider-type anthropic
+   ```
+
+   By default, the script searches for OpenAI API keys. Use the `--provider-type anthropic` argument to search for Anthropic API keys instead.
+
+That's it! The script will now scan GitHub for available API keys based on the specified provider type.
 
 ## Command Line Arguments
 
 The script supports several command line arguments for customization:
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `--from-iter` | Start scanning from a specific iteration | `None` |
-| `--debug` | Enable debug mode for detailed logging | `False` |
-| `-ceko, --check-existed-keys-only` | Only check existing keys in the database | `False` |
-| `-k, --keywords` | Specify a list of search keywords | Default keyword list |
-| `-l, --languages` | Specify a list of programming languages to search | Default language list |
+| Parameter                          | Description                                                      | Default               |
+| ---------------------------------- | ---------------------------------------------------------------- | --------------------- |
+| `--from-iter`                      | Start scanning from a specific iteration                         | `None`                |
+| `--debug`                          | Enable debug mode for detailed logging                           | `False`               |
+| `-ceko, --check-existed-keys-only` | Only check existing keys in the database                         | `False`               |
+| `-k, --keywords`                   | Specify a list of search keywords                                | Default keyword list  |
+| `-l, --languages`                  | Specify a list of programming languages to search                | Default language list |
+| `-pt, --provider-type`             | Specify the provider type for API keys (`openai` or `anthropic`) | `openai`              |
 
 Examples:
 
 ```bash
-# Start scanning from iteration 100
+# Start scanning for OpenAI keys from iteration 100
 python3 src/main.py --from-iter 100
 
 # Only check existing keys
 python3 src/main.py --check-existed-keys-only
+
+# Search for Anthropic keys
+python3 src/main.py --provider-type anthropic
 
 # Use custom keywords and languages
 python3 src/main.py -k "openai" "chatgpt" -l python javascript
