@@ -13,6 +13,8 @@ def check_key(key, model="gpt-4o-mini", provider_type="openai") -> str | None:
     Check if the API key is valid for the specified provider type (OpenAI or Anthropic).
     """
     try:
+        rich.print(f"🔍 Validating key for provider: [bold blue]{provider_type}[/bold blue]")
+
         if provider_type == "openai":
             # OpenAI API key validation
             client = OpenAI(api_key=key)

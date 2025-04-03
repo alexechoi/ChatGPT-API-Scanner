@@ -59,6 +59,7 @@ KEYWORDS = [
     "anthropic",
     "anthropic api key",
     "sk-anthropic",
+    "sk-ant",
 ]
 
 LANGUAGES = [

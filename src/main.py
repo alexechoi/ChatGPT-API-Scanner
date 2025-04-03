@@ -28,13 +28,14 @@ httpx_logger.setLevel(logging.WARNING)
 
 class APIKeyLeakageScanner:
     """
-    Scan GitHub for available OpenAI API Keys
+    Scan GitHub for available OpenAI or Anthropic API Keys
     """
 
-    def __init__(self, db_file: str, keywords: list, languages: list):
+    def __init__(self, db_file: str, keywords: list, languages: list, provider_type: str = "openai"):
         self.db_file = db_file
         self.driver: webdriver.Chrome | None = None
         self.cookies: CookieManager | None = None
+        self.provider_type = provider_type
         rich.print(f"📂 Opening database file {self.db_file}")
 
         self.dbmgr = DatabaseManager(self.db_file)
@@ -115,7 +116,7 @@ class APIKeyLeakageScanner:
 
     def _process_url(self, url: str):
         """
-        Process a search query url
+        Process a search query URL.
         """
         if self.driver is None:
             raise ValueError("Driver is not initialized")
@@ -187,14 +188,14 @@ class APIKeyLeakageScanner:
 
     def check_api_keys_and_save(self, keys: list[str]):
         """
-        Check a list of API keys
+        Check a list of API keys for the specified provider type.
         """
         with self.dbmgr as mgr:
             unique_keys = list(set(keys))
             unique_keys = [api for api in unique_keys if not mgr.key_exists(api)]
 
         with ThreadPoolExecutor(max_workers=10) as executor:
-            results = list(executor.map(check_key, unique_keys))
+            results = list(executor.map(lambda key: check_key(key, provider_type=self.provider_type), unique_keys))
             with self.dbmgr as mgr:
                 for idx, result in enumerate(results):
                     mgr.insert(unique_keys[idx], result)
@@ -203,12 +204,14 @@ class APIKeyLeakageScanner:
         """
         Search for API keys, and save the results to the database
         """
+        rich.print(f"🔍 Starting search for [bold blue]{self.provider_type}[/bold blue] API keys")
+
         progress = ProgressManager()
         total = len(self.candidate_urls)
         pbar = tqdm(
             enumerate(self.candidate_urls),
             total=total,
-            desc="🔍 Searching ...",
+            desc=f"🔍 Searching for {self.provider_type} keys ...",
         )
         if from_iter is None:
             from_iter = progress.load(total=total)
@@ -268,14 +271,21 @@ class APIKeyLeakageScanner:
             self.driver.quit()
 
 
-def main(from_iter: int | None = None, check_existed_keys_only: bool = False, keywords: list | None = None, languages: list | None = None, check_insuffcient_quota: bool = False):
+def main(
+    from_iter: int | None = None,
+    check_existed_keys_only: bool = False,
+    keywords: list | None = None,
+    languages: list | None = None,
+    check_insuffcient_quota: bool = False,
+    provider_type: str = "openai",
+):
     """
-    Main function to scan GitHub for available OpenAI API Keys
+    Main function to scan GitHub for available API Keys.
     """
     keywords = KEYWORDS.copy() if keywords is None else keywords
     languages = LANGUAGES.copy() if languages is None else languages
 
-    leakage = APIKeyLeakageScanner("github.db", keywords, languages)
+    leakage = APIKeyLeakageScanner("github.db", keywords, languages, provider_type)
 
     if not check_existed_keys_only:
         leakage.login_to_github()
@@ -314,7 +324,7 @@ if __name__ == "__main__":
         "--check-insuffcient-quota",
         action="store_true",
         default=False,
-        help="Check and update status of the insuffcient quota keys",
+        help="Check and update status of the insufficient quota keys",
     )
     parser.add_argument(
         "-k",
@@ -330,6 +340,14 @@ if __name__ == "__main__":
         default=LANGUAGES,
         help="Languages to search",
     )
+    parser.add_argument(
+        "-pt",
+        "--provider-type",
+        type=str,
+        choices=["openai", "anthropic"],
+        default="openai",
+        help="Specify the provider type for API keys (openai or anthropic). Default is openai.",
+    )
     args = parser.parse_args()
 
     if args.debug:
@@ -341,4 +359,5 @@ if __name__ == "__main__":
         keywords=args.keywords,
         languages=args.languages,
         check_insuffcient_quota=args.check_insuffcient_quota,
+        provider_type=args.provider_type,
     )
